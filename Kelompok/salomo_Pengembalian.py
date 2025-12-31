@@ -8,7 +8,6 @@ FILE_KEMBALI = "data_pengembalian.json"
 
 data_pengembalian = []
 
-
 def load_pengembalian():
     if os.path.exists(FILE_KEMBALI):
         with open(FILE_KEMBALI, "r") as f:
@@ -33,15 +32,15 @@ def load_peminjaman():
         f.seek(0)
         return json.load(f)
 
-
-
 def menu_pengembalian():
     load_pengembalian()
     while True:
         print("\n=== MENU PENGEMBALIAN ===")
         print("1. Kembalikan Buku")
         print("2. Lihat Data Pengembalian")
-        print("3. Kembali")
+        print("3. Update Data Pengembalian")
+        print("4. Hapus Data Pengembalian")
+        print("5. Kembali")
 
         p = input("Pilih: ")
 
@@ -51,10 +50,13 @@ def menu_pengembalian():
             tampilkan_pengembalian()
             input("Enter untuk lanjut...")
         elif p == "3":
+            update_pengembalian()
+        elif p == "4":
+            hapus_pengembalian()
+        elif p == "5":
             break
         else:
-            print("Pilihan salah")
-
+            print("❌ Pilihan salah")
 
 def kembalikan_buku():
     data_peminjaman = load_peminjaman()
@@ -71,7 +73,7 @@ def kembalikan_buku():
         pilih = int(input("Pilih nomor yang dikembalikan: ")) - 1
         data = data_peminjaman.pop(pilih)
     except:
-        print("Pilihan tidak valid")
+        print("❌ Pilihan tidak valid")
         return
 
     tanggal_kembali = datetime.now()
@@ -95,8 +97,7 @@ def kembalikan_buku():
         json.dump(data_peminjaman, f, indent=4)
 
     save_pengembalian()
-    print("Buku berhasil dikembalikan")
-
+    print("✅ Buku berhasil dikembalikan")
 
 
 def tampilkan_pengembalian():
@@ -106,19 +107,55 @@ def tampilkan_pengembalian():
         return
 
     for i, d in enumerate(data_pengembalian, 1):
-        # jika data lama belum ada durasi
-        durasi = d.get("durasi_hari")
+        print("----------------------------------")
+        print(f"No              : {i}")
+        print(f"Nama            : {d.get('nama','-')}")
+        print(f"Judul Buku      : {d.get('judul','-')}")
+        print(f"Tgl Pinjam      : {d.get('tanggal_pinjam','-')}")
+        print(f"Tgl Kembali     : {d.get('tanggal_kembali','-')}")
+        print(f"Durasi (hari)   : {d.get('durasi_hari','-')}")
+    print("----------------------------------")
 
-        if durasi is None:
-            try:
-                t1 = datetime.strptime(d["tanggal_pinjam"], "%d/%m/%Y")
-                t2 = datetime.strptime(d["tanggal_kembali"], "%d/%m/%Y")
-                durasi = (t2 - t1).days
-            except:
-                durasi = "-"
+def update_pengembalian():
+    tampilkan_pengembalian()
+    if not data_pengembalian:
+        return
 
-        print(
-            f"{i}. {d.get('nama','-')} | {d.get('judul','-')} | "
-            f"{d.get('tanggal_pinjam','-')} → {d.get('tanggal_kembali','-')} "
-            f"({durasi} hari)"
-        )
+    try:
+        idx = int(input("Pilih nomor data yang diupdate: ")) - 1
+        if idx < 0 or idx >= len(data_pengembalian):
+            print("❌ Nomor tidak valid")
+            return
+
+        data = data_pengembalian[idx]
+
+        data["nama"] = input("Nama Baru        : ")
+        data["judul"] = input("Judul Buku Baru  : ")
+
+        t_pinjam = datetime.strptime(data["tanggal_pinjam"], "%d/%m/%Y")
+        t_kembali = datetime.strptime(data["tanggal_kembali"], "%d/%m/%Y")
+        data["durasi_hari"] = (t_kembali - t_pinjam).days
+
+        save_pengembalian()
+        print("✅ Data pengembalian berhasil diupdate")
+
+    except ValueError:
+        print("❌ Input harus angka")
+
+def hapus_pengembalian():
+    tampilkan_pengembalian()
+    if not data_pengembalian:
+        return
+
+    try:
+        idx = int(input("Pilih nomor data yang dihapus: ")) - 1
+        if idx < 0 or idx >= len(data_pengembalian):
+            print("❌ Nomor tidak valid")
+            return
+
+        del data_pengembalian[idx]
+        save_pengembalian()
+        print("✅ Data pengembalian berhasil dihapus")
+
+    except ValueError:
+        print("❌ Input harus angka")
