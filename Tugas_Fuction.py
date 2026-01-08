@@ -1,4 +1,4 @@
-def pelanggan():
+def pelanggan():#0064
     print("---Input Data Peminjam buku---")
     nama = input("Masukan Nama Peminjam buku: ")
     buku = input("Masukan Judul buku yang dipinjam: ")

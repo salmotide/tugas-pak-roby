@@ -1,135 +1,95 @@
-import json
-import os
-from datetime import datetime
-import Salomo_Perpustakaan as Perpus
+def pelanggan_064():
+    print("---Input Data Peminjam buku---")
+    nama = input("Masukan Nama Peminjam buku: ")
+    buku = input("Masukan Judul buku yang dipinjam: ")
 
-FILE = "data_peminjaman.json"
-data_peminjaman = []
+    pelanggan_baru ={
+        "nama" : nama,
+        "buku" : buku
+    }
 
+    data_pelanggan.append(pelanggan_baru)
+    print(f"Data {nama} berhasil di masukan ke sistem")
 
-def load():
-    if os.path.exists(FILE):
-        with open(FILE, "r") as f:
-            if f.read().strip():
-                f.seek(0)
-                data_peminjaman.clear()
-                data_peminjaman.extend(json.load(f))
+data_pelanggan = []
 
-
-def save():
-    with open(FILE, "w") as f:
-        json.dump(data_peminjaman, f, indent=4)
-
-
-
-def menu():
-    print("\n=== PEMINJAMAN BUKU ===")
-    print("1. Tambah Peminjaman")
-    print("2. Lihat Data Peminjaman")
-    print("3. Update Peminjaman")
-    print("4. Hapus Peminjaman")
-    print("5. Kembali")
-    return input("Pilih: ")
-
-
-def tambah_data():
-    Perpus.tampilkan_buku()
-
-    nama = input("Nama Peminjam: ").strip()
-    judul = input("Judul Buku: ").strip()
-
-    buku = Perpus.cari_buku(judul)
-    if not buku or buku["stok"] <= 0:
-        print("❌ Buku tidak tersedia")
-        return
-
-    buku["stok"] -= 1
-    Perpus.save_buku()
-
-    data_peminjaman.append({
-        "nama": nama,
-        "judul": judul,
-        "tanggal_pinjam": datetime.now().strftime("%d/%m/%Y")
-    })
-
-    save()
-    print("✅ Peminjaman berhasil")
-
-
-def tampilkan_data():
-    print("\n=== DATA PEMINJAMAN ===")
-    if not data_peminjaman:
-        print("Belum ada data")
+def lihatpelanggan_064():
+    print("---List Peminjam---")
+    if not data_pelanggan:
+        print("List Kosong")
     else:
-        for i, d in enumerate(data_peminjaman, 1):
-            print(f"{i}. Nama   : {d['nama']}")
-            print(f"   Buku   : {d['judul']}")
-            print(f"   Tanggal: {d['tanggal_pinjam']}")
-            print("---------------------------------")
+        for a, b in enumerate(data_pelanggan, 1):
+            print(f"{a}. Nama Peminjam: {b['nama']} | Judul buku: {b['buku']}")
 
-
-def update_data():
-    tampilkan_data()
-    if not data_peminjaman:
+def edit_pelanggan_064():
+    lihatpelanggan_064()
+    if not data_pelanggan:
         return
-
+    print ("---Edit data---")
     try:
-        idx = int(input("Pilih nomor data yang diupdate: ")) - 1
-        if idx < 0 or idx >= len(data_peminjaman):
-            print("❌ Nomor tidak valid")
-            return
+        urutan = int(input("Masukan nomor urut yang ingin diedit: "))
+        index = urutan - 1
 
-        data_peminjaman[idx]["nama"] = input("Nama baru: ")
-        data_peminjaman[idx]["judul"] = input("Judul buku baru: ")
-        data_peminjaman[idx]["tanggal_pinjam"] = datetime.now().strftime("%d/%m/%Y")
+        if 0 <= index < len(data_pelanggan):
+            data_saat_ini = data_pelanggan[index]
 
-        save()
-        print("✅ Data peminjaman berhasil diupdate")
+            print(f"Data Lama -> Nama: {data_saat_ini['nama']} | Buku: {data_saat_ini['buku']}")
+            print("(Biarkan kosong dan tekan Enter jika tidak ingin mengubah data)")
+
+            nama_baru = input("Masukan Nama Baru: ")
+            buku_baru = input("Masukan Judul buku baru: ")
+
+            if  len(nama_baru.strip()) > 0:
+                data_pelanggan[index]['nama'] = nama_baru
+
+            if len(buku_baru.strip()) > 0:
+                data_pelanggan[index]['buku'] = buku_baru
+
+            print("Data berhasil diperbarui")
+        else:
+            print("Nomor tidak ditemukan")
+    except ValueError:
+        print("Error: Harap masukan angka")
+
+def hapus_pelanggan_064():
+    lihatpelanggan_064()
+    if not data_pelanggan:
+        return
+    print("---Hapus Data---")
+    try:
+        urutan = int(input("Masukan nomor urut yang ingin dihapus: "))
+        if 0 < urutan <= len(data_pelanggan):
+            data_terhapus = data_pelanggan.pop(urutan - 1)
+            print(f"Data '{data_terhapus['nama']}' berhasil dihapus")
+        else:
+            print("Nomor tidak ditemukan")
 
     except ValueError:
-        print("❌ Input harus angka")
+        print("Error: Harap masukan angka, bukan huruf")
 
-
-def hapus_data():
-    tampilkan_data()
-    if not data_peminjaman:
-        return
+while True:
+    print("~~Perpustakaan~~")
+    print("1. Tambah Data Peminjam Buku")
+    print("2. Lihat Data Peminjam Buku")
+    print("3. Edit Data Peminjam Buku")
+    print("4. Hapus Data Peminjam Buku") 
+    print("5. Keluar")
 
     try:
-        idx = int(input("Pilih nomor data yang dihapus: ")) - 1
-        if idx < 0 or idx >= len(data_peminjaman):
-            print("❌ Nomor tidak valid")
-            return
+        pilih = int(input("Pilih Menu : "))
 
-        judul = data_peminjaman[idx]["judul"]
-
-        buku = Perpus.cari_buku(judul)
-        if buku:
-            buku["stok"] += 1
-            Perpus.save_buku()
-
-        del data_peminjaman[idx]
-        save()
-        print("✅ Data peminjaman berhasil dihapus")
-
-    except ValueError:
-        print("❌ Input harus angka")
-
-
-def menu_raffy():
-    load()
-    while True:
-        p = menu()
-        if p == "1":
-            tambah_data()
-        elif p == "2":
-            tampilkan_data()
-            input("Enter untuk lanjut...")
-        elif p == "3":
-            update_data()
-        elif p == "4":
-            hapus_data()
-        elif p == "5":
+        if pilih == 1:
+            pelanggan_064()
+        elif pilih == 2:
+            lihatpelanggan_064()
+        elif pilih == 3:
+            edit_pelanggan_064()
+        elif pilih == 4:
+            hapus_pelanggan_064()
+        elif pilih == 5:
+            print("Terima kasih, sampai jumpa!")
             break
         else:
-            print("❌ Pilihan tidak valid")
+            print("Pilihan tidak valid.")
+    except ValueError:
+        print("Masukan harus berupa angka.")

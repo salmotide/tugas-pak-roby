@@ -1,176 +1,136 @@
-import json
-import os
-import Salomo_Perpustakaan as Perpus
+data_transaksi = []
 
-FILE = "data_pembelian.json"
-data_pembelian = []
+def menu_078():
+    print("\n=== Data Transaksi Pembelian Buku ===")
+    print("1. Tambah Transaksi")
+    print("2. Tampilkan Data Transaksi")
+    print("3. Perbarui Data Transaksi")
+    print("4. Hapus Data Transaksi")
+    print("5. Keluar")
+    pilihan = input("Pilih menu (1-5): ")
+    return pilihan
 
-def load():
-    if os.path.exists(FILE):
+def tambah_data_078():
+    print("\n--- TAMBAH TRANSAKSI BARU ---")
+    id_transaksi = input("Masukkan ID Transaksi: ")
+    nama = input("Masukkan Nama Pelanggan: ")
+    judul = input("Masukkan Judul Buku: ")
+    
+    while True:
+        harga_input = input("Masukkan Harga Buku (Rp): ")
+        harga_input = harga_input.replace(".", "")  
+        harga_input = harga_input.replace(",", "") 
         try:
-            with open(FILE, "r") as f:
-                if f.read().strip():
-                    f.seek(0)
-                    data_pembelian.clear()
-                    data_pembelian.extend(json.load(f))
-        except json.JSONDecodeError:
-            pass
-
-
-def save():
-    with open(FILE, "w") as f:
-        json.dump(data_pembelian, f, indent=4)
-
-
-load()
-
-def menu():
-    print("\n=== PEMBELIAN BUKU ===")
-    print("1. Tambah Pembelian")
-    print("2. Lihat Data Pembelian")
-    print("3. Update Pembelian")
-    print("4. Hapus Pembelian")
-    print("5. Kembali")
-    return input("Pilih: ")
-
-def tambah_data():
-    Perpus.tampilkan_buku()
-
-    judul = input("Judul Buku: ").strip()
-    buku = Perpus.cari_buku(judul)
-
-    if not buku:
-        print("❌ Buku tidak ada di perpustakaan")
-        return
-
-    if buku["stok"] <= 0:
-        print("❌ Stok habis")
-        return
-
-    while True:
-        jml = input("Jumlah beli: ")
-        if jml.isdigit():
-            jumlah = int(jml)
+            harga = int(harga_input)
             break
-        print("❌ Jumlah harus angka")
-
-    if jumlah > buku["stok"]:
-        print("❌ Stok tidak cukup")
-        return
-
-    total = jumlah * buku["harga"]
-
-    buku["stok"] -= jumlah
-    Perpus.save_buku()
-
-    data_pembelian.append({
-        "judul": judul,
-        "jumlah": jumlah,
-        "harga": buku["harga"],
-        "total": total
-    })
-
-    save()
-    print("✅ Pembelian berhasil")
-
-def tampilkan_data():
-    print("\n=== DATA PEMBELIAN ===")
-    if not data_pembelian:
-        print("Belum ada data")
+        except:
+            print("Harga harus berupa angka!")
+    
+    print(f"Total: Rp {harga:,}".replace(",", "."))
+    
+    print("\nMetode Pembayaran:")
+    print("1. Debit")
+    print("2. Tunai") 
+    print("3. Kartu Kredit")
+    print("4. QRIS")
+    pilih = input("Pilih (1-4): ")
+    
+    if pilih == "1":
+        metode = "Debit"
+    elif pilih == "2":
+        metode = "Tunai"
+    elif pilih == "3":
+        metode = "Kartu Kredit"
+    elif pilih == "4":
+        metode = "QRIS"
     else:
-        for i, d in enumerate(data_pembelian, 1):
-            print("----------------------------------")
-            print(f"No     : {i}")
-            print(f"Judul  : {d['judul']}")
-            print(f"Jumlah : {d['jumlah']}")
-            print(f"Harga  : Rp {d['harga']:,}")
-            print(f"Total  : Rp {d['total']:,}")
-    print("----------------------------------")
+        metode = "Tunai"
+    
+    if metode == "Debit":
+        print("Silakan gesek kartu...")
+    else:
+        print(f"Proses pembayaran {metode}...")
+    
+    transaksi_baru = {
+        "ID": id_transaksi,
+        "Nama": nama,
+        "Judul": judul,
+        "Harga": harga,
+        "Metode": metode,
+        "Status": "Selesai"
+    }
+    data_transaksi.append(transaksi_baru)
+    
+    print("\nTransaksi berhasil!")
+    print("Pelanggan menerima buku.")
 
-def update_data():
-    tampilkan_data()
-    if not data_pembelian:
-        return
+def tampilkan_data_078():
+    if len(data_transaksi) == 0:
+        print("\nBelum ada data")
+    else:
+        print("\n--- DAFTAR TRANSAKSI ---")
+        for i in range(len(data_transaksi)):
+            t = data_transaksi[i]
+            print(f"\n[{i}] ID: {t['ID']}")
+            print(f"Nama: {t['Nama']}")
+            print(f"Buku: {t['Judul']}")
+            print(f"Harga: Rp {t['Harga']:,}".replace(",", "."))
+            print(f"Metode: {t['Metode']}")
+            print(f"Status: {t['Status']}")
 
-    try:
-        idx = int(input("Pilih nomor data yang diupdate: ")) - 1
-        if idx < 0 or idx >= len(data_pembelian):
-            print("❌ Nomor tidak valid")
-            return
-
-        data = data_pembelian[idx]
-
-        buku_lama = Perpus.cari_buku(data["judul"])
-        if buku_lama:
-            buku_lama["stok"] += data["jumlah"]
-
-        judul_baru = input("Judul Buku Baru: ").strip()
-        buku_baru = Perpus.cari_buku(judul_baru)
-
-        if not buku_baru or buku_baru["stok"] <= 0:
-            print("❌ Buku tidak tersedia")
-            return
-
-        jumlah_baru = int(input("Jumlah Baru: "))
-        if jumlah_baru > buku_baru["stok"]:
-            print("❌ Stok tidak cukup")
-            return
-
-        buku_baru["stok"] -= jumlah_baru
-        Perpus.save_buku()
-
-        data["judul"] = judul_baru
-        data["jumlah"] = jumlah_baru
-        data["harga"] = buku_baru["harga"]
-        data["total"] = jumlah_baru * buku_baru["harga"]
-
-        save()
-        print("✅ Data pembelian berhasil diupdate")
-
-    except ValueError:
-        print("❌ Input harus angka")
-
-
-def hapus_data():
-    tampilkan_data()
-    if not data_pembelian:
-        return
-
-    try:
-        idx = int(input("Pilih nomor data yang dihapus: ")) - 1
-        if idx < 0 or idx >= len(data_pembelian):
-            print("❌ Nomor tidak valid")
-            return
-
-        data = data_pembelian[idx]
-
-        # kembalikan stok
-        buku = Perpus.cari_buku(data["judul"])
-        if buku:
-            buku["stok"] += data["jumlah"]
-            Perpus.save_buku()
-
-        del data_pembelian[idx]
-        save()
-        print("✅ Data pembelian berhasil dihapus")
-
-    except ValueError:
-        print("❌ Input harus angka")
-
-
-def menu_andhika():
-    while True:
-        p = menu()
-        if p == "1":
-            tambah_data()
-        elif p == "2":
-            tampilkan_data()
-            input("Enter untuk lanjut...")
-        elif p == "3":
-            update_data()
-        elif p == "4":
-            hapus_data()
-        elif p == "5":
+def perbarui_data_078():
+    print("\n--- UPDATE DATA ---")
+    id_cari = input("ID Transaksi yang mau diupdate: ")
+    
+    ketemu = False
+    for t in data_transaksi:
+        if t["ID"] == id_cari:
+            ketemu = True
+            print(f"\nData sekarang:")
+            print(f"Nama: {t['Nama']}")
+            print(f"Judul: {t['Judul']}")
+            
+            nama_baru = input("Nama baru: ")
+            judul_baru = input("Judul baru: ")
+            
+            t["Nama"] = nama_baru
+            t["Judul"] = judul_baru
+            
+            print("\nData berhasil diupdate!")
             break
-        else:
-            print("❌ Pilihan salah")
+    
+    if not ketemu:
+        print("ID tidak ditemukan")
+
+def hapus_data_078():
+    print("\n--- HAPUS DATA ---")
+    id_cari = input("ID Transaksi yang mau dihapus: ")
+    
+    ketemu = False
+    for t in data_transaksi:
+        if t["ID"] == id_cari:
+            ketemu = True
+            data_transaksi.remove(t)
+            print("\nData berhasil dihapus!")
+            break
+    
+    if not ketemu:
+        print("ID tidak ditemukan")
+
+while True:
+    pilihan = menu_078()
+    if pilihan == "1":
+        tambah_data_078()
+    elif pilihan == "2":
+        tampilkan_data_078()
+    elif pilihan == "3":
+        perbarui_data_078()
+    elif pilihan == "4":
+        hapus_data_078()
+    elif pilihan == "5":
+        print("\nTerima kasih!")
+        break
+    else:
+        print("Pilihan salah!")
+    
+    input("\nEnter untuk lanjut...")
